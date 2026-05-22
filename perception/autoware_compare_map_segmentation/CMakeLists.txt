@@ -41,6 +41,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
+  autoware_agnocast_wrapper
   autoware_qos_utils
   grid_map_pcl
   grid_map_ros
