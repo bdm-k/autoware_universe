@@ -372,8 +372,9 @@ VoxelGridDynamicMapLoader::VoxelGridDynamicMapLoader(
 
   client_callback_group_ =
     node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  map_update_client_ = node->create_client<autoware_map_msgs::srv::GetDifferentialPointCloudMap>(
-    "map_loader_service", AUTOWARE_DEFAULT_SERVICES_QOS_PROFILE(), client_callback_group_);
+  map_update_client_ = AUTOWARE_CREATE_CLIENT3_ON_NODE(
+    autoware_map_msgs::srv::GetDifferentialPointCloudMap, node, "map_loader_service",
+    rclcpp::ServicesQoS(), client_callback_group_);
 
   while (!map_update_client_->wait_for_service(std::chrono::seconds(1)) && rclcpp::ok()) {
     RCLCPP_INFO(logger_, "service not available, waiting again ...");
@@ -507,7 +508,7 @@ bool VoxelGridDynamicMapLoader::should_update_map(
 
 void VoxelGridDynamicMapLoader::request_update_map(const geometry_msgs::msg::Point & position)
 {
-  auto request = std::make_shared<autoware_map_msgs::srv::GetDifferentialPointCloudMap::Request>();
+  auto request = ALLOCATE_OUTPUT_SERVICE_REQUEST(map_update_client_);
   request->area.center_x = position.x;
   request->area.center_y = position.y;
   request->area.radius = map_loader_radius_;
@@ -515,7 +516,7 @@ void VoxelGridDynamicMapLoader::request_update_map(const geometry_msgs::msg::Poi
 
   auto callback =
     [this](
-      rclcpp::Client<autoware_map_msgs::srv::GetDifferentialPointCloudMap>::SharedFuture future) {
+      AUTOWARE_CLIENT_SHARED_FUTURE(autoware_map_msgs::srv::GetDifferentialPointCloudMap) future) {
       try {
         auto result = future.get();
         if (result->new_pointcloud_with_ids.empty() && result->ids_to_remove.empty()) {
@@ -530,7 +531,7 @@ void VoxelGridDynamicMapLoader::request_update_map(const geometry_msgs::msg::Poi
       }
     };
 
-  map_update_client_->async_send_request(request, callback);
+  map_update_client_->async_send_request(std::move(request), callback);
 }
 
 }  // namespace autoware::compare_map_segmentation

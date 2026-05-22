@@ -15,6 +15,7 @@
 #ifndef AUTOWARE__COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
 #define AUTOWARE__COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
 
+#include <autoware/agnocast_wrapper/autoware_agnocast_wrapper.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_map_msgs/srv/get_differential_point_cloud_map.hpp>
@@ -180,8 +181,7 @@ protected:
   double map_update_distance_threshold_;
   double map_loader_radius_;
   double max_map_grid_size_;
-  rclcpp::Client<autoware_map_msgs::srv::GetDifferentialPointCloudMap>::SharedPtr
-    map_update_client_;
+  AUTOWARE_CLIENT_PTR(autoware_map_msgs::srv::GetDifferentialPointCloudMap) map_update_client_;
   rclcpp::CallbackGroup::SharedPtr client_callback_group_;
   rclcpp::CallbackGroup::SharedPtr timer_callback_group_;
 
